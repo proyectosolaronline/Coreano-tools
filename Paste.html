@@ -1,0 +1,91 @@
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="avatar">🤖</div>
+        <div class="header-texto">
+            <h1>
+                Traductor IA
+                <span id="subtitulo">🇪🇸 Español → 🇰🇷 Coreano · Voz 100% funcional</span>
+            </h1>
+        </div>
+        <button id="compartirBtn" title="Compartir esta página">📤</button>
+    </div>
+
+    <div class="qr-panel" id="qrPanel">
+        <img id="qrImg" src="" alt="Código QR para compartir esta página">
+        <div class="qr-url" id="qrUrl"></div>
+        <button id="copiarLinkBtn">📋 Copiar enlace</button>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="mensaje bot">
+            <div class="burbuja" id="mensajeBienvenida">
+                👋 ¡Hola! Soy tu <strong>Traductor IA</strong>.
+                <br><br>
+                Elige idioma de origen y destino, escribe o usa el micrófono en el idioma que elijas, y te daré la traducción con <strong>voz REAL</strong>.
+                <br><br>
+                <span style="color:#ffd93d;">✅ Ahora con Alemán y micrófono multi-idioma.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controles">
+        <div class="fila-idiomas">
+            <select id="idiomaOrigen"></select>
+            <span class="flecha">➜</span>
+            <select id="idiomaDestino"></select>
+        </div>
+        <div class="fila-texto">
+            <input type="text" id="textoInput" placeholder="Escribe o usa el micrófono..." autofocus>
+            <button id="micBtn" title="Hablar en el idioma de origen">🎤</button>
+        </div>
+        <div class="fila-enviar">
+            <button id="enviarBtn">➤ Enviar</button>
+        </div>
+    </div>
+    <div class="status" id="statusMsg">
+        🔹 Usa API de traducción de MyMemory + voz nativa del navegador
+    </div>
+</div>
+
+<script>
+    // ---- Definición central de idiomas soportados ----
+    const IDIOMAS = [
+        { cod: 'es',    voz: 'es', langTag: 'es-ES', flag: '🇪🇸', nombre: 'Español' },
+        { cod: 'en',    voz: 'en', langTag: 'en-US', flag: '🇺🇸', nombre: 'Inglés' },
+        { cod: 'de',    voz: 'de', langTag: 'de-DE', flag: '🇩🇪', nombre: 'Alemán' },
+        { cod: 'ko',    voz: 'ko', langTag: 'ko-KR', flag: '🇰🇷', nombre: 'Coreano' },
+        { cod: 'zh-CN', voz: 'zh', langTag: 'zh-CN', flag: '🇨🇳', nombre: 'Chino (mandarín)' }
+    ];
+
+    const chatBox = document.getElementById('chatBox');
+    const input = document.getElementById('textoInput');
+    const enviarBtn = document.getElementById('enviarBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const idiomaOrigenSelect = document.getElementById('idiomaOrigen');
+    const idiomaDestinoSelect = document.getElementById('idiomaDestino');
+    const subtitulo = document.getElementById('subtitulo');
+    const statusBase = '🔹 Usa API de traducción de MyMemory + voz nativa del navegador';
+
+    function poblarSelect(select, codPorDefecto) {
+        IDIOMAS.forEach(idioma => {
+            const opt = document.createElement('option');
+            opt.value = idioma.cod;
+            opt.dataset.flag = idioma.flag;
+            opt.dataset.nombre = idioma.nombre;
+            opt.dataset.voz = idioma.voz;
+            opt.dataset.lang = idioma.langTag;
+            opt.textContent = `${idioma.flag} ${idioma.nombre}`;
+            if (idioma.cod === codPorDefecto) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+    poblarSelect(idiomaOrigenSelect, 'es');
+    poblarSelect(idiomaDestinoSelect, 'ko');
+
+    function actualizarSubtituloYPlaceholder() {
+        const origen = idiomaOrigenSelect.selectedOptions[0];
+        const destino = idiomaDestinoSelect.selectedOptions[0];
+        subtitulo.textContent = `${origen.dataset.flag} ${origen.dataset.nombre} → ${destino.dataset.flag} ${destino.dataset.nombre} · Voz 100% funcional`;
+        input.placeholder = `Escribe en ${origen.dataset.nombre} o usa el micrófono...`;

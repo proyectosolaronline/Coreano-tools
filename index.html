@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🤖 Traductor IA Pro</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --dark: #0a0a0a;
+            --darker: #1a1a1a;
+            --light: #ffffff;
+            --gray: #333333;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--dark);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), #a29bfe);
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-info h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .header-info .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .share-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .share-btn:active {
+            transform: scale(0.9);
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--dark);
+            min-height: 0;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .bot .message-content {
+            background: var(--gray);
+            color: white;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .translation-text {
+            display: block;
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        .speak-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .speak-btn:active {
+            transform: scale(0.95);
+            background: #5a4bd1;
+        }
+
+        .speak-btn.speaking {
+            background: var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Controls */
+        .controls {
+            background: var(--darker);
+            padding: 16px;
+            border-top: 1px solid #2a2a2a;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .language-select {
+            flex: 1;
+            padding: 12px;
+            background: var(--gray);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            -webkit-appearance: none;
+            text-align: center;
+            text-align-last: center;
+        }
+
+        .language-select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .language-select option {
+            background: var(--gray);
+            color: white;
+            text-align: left;
+        }
+
+        .swap-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 44px;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .swap-btn:active {
+            transform: rotate(180deg);
+            background: #5a4bd1;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 14px 16px;
+            background: var(--gray);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+            min-width: 0;
+        }
+
+        .text-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .text-input::placeholder {
+            color: #888;
+        }
+
+        .mic-btn {
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 48px;
+            border-radius: 12px;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .mic-btn:active {
+            transform: scale(0.9);
+        }
+
+        .mic-btn.listening {
+            background: var(--danger);
+            animation: pulse 0.5s infinite;
+        }
+
+        .translate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(108,92,231,0.3);
+        }
+
+        .translate-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(108,92,231,0.3);
+        }
+
+        /* QR Section */
+        .qr-section {
+            background: var(--darker);
+            padding: 16px;
+            text-align: center;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .qr-section h3 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .qr-code {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .qr-url {
+            color: #888;
+            font-size: 11px;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+
+        /* Status */
+        .status-bar {
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            text-align: center;
+            color: var(--warning);
+            font-size: 12px;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        /* Responsive for larger screens */
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 500px;
+                min-height: 90vh;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="avatar">🤖</div>
+            <div class="header-info">
+                <h1>Traductor IA Pro</h1>
+                <div class="subtitle" id="subtitle">🇲🇽 Español → 🇰🇷 Coreano</div>
+            </div>
+            <button class="share-btn" onclick="toggleQR()">📤</button>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="message-content">
+                    👋 ¡Hola! Soy tu traductor inteligente.<br>
+                    Habla o escribe y te traduciré al instante.
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="language-selector">
+                <select class="language-select" id="sourceLang" onchange="updateSubtitle()">
+                    <option value="es-MX">🇲🇽 Español</option>
+                    <option value="en-US">🇺🇸 English</option>
+                    <option value="de-DE">🇩🇪 Deutsch</option>
+                    <option value="ko-KR">🇰🇷 한국어</option>
+                    <option value="zh-CN">🇨🇳 中文</option>
+                    <option value="ja-JP">🇯🇵 日本語</option>
+                    <option value="fr-FR">🇫🇷 Français</option>
+                    <option value="it-IT">🇮🇹 Italiano</option>
+                    <option value="pt-BR">🇧🇷 Português</option>
+                </select>
+                <button class="swap-btn" onclick="swapLanguages()">⇄</button>
+                <select class="language-select" id="targetLang" onchange="updateSubtitle()">
+                    <option value="ko-KR">🇰🇷 한국어</option>
+                    <option value="es-MX">🇲🇽 Español</option>
+                    <option value="en-US">🇺🇸 English</option>
+                    <option value="de-DE">🇩🇪 Deutsch</option>
+                    <option value="zh-CN">🇨🇳 中文</option>
+                    <option value="ja-JP">🇯🇵 日本語</option>
+                    <option value="fr-FR">🇫🇷 Français</option>
+                    <option value="it-IT">🇮🇹 Italiano</option>
+                    <option value="pt-BR">🇧🇷 Português</option>
+                </select>
+            </div>
+
+            <div class="input-container">
+                <input type="text" class="text-input" id="textInput" placeholder="Escribe o habla..." />
+                <button class="mic-btn" id="micBtn" onclick="toggleMicrophone()">🎤</button>
+            </div>
+
+            <button class="translate-btn" onclick="translateText()">
+                ➤ Traducir
+            </button>
+        </div>
+
+        <!-- QR Section -->
+        <div class="qr-section" id="qrSection" style="display: none;">
+            <h3>📱 Comparte esta página</h3>
+            <img class="qr-code" id="qrCode" src="" alt="QR Code" />
+            <p class="qr-url" id="qrUrl"></p>
+        </div>
+
+        <!-- Status -->
+        <div class="status-bar" id="statusBar">
+            ✅ Listo para traducir
+        </div>
+    </div>
+
+    <script>
+        // Estado global
+        let isListening = false;
+        let currentUtterance = null;
+
+        // Configuración de idiomas
+        const languages = {
+            'es-MX': { name: 'Español', flag: '🇲🇽', speechLang: 'es-MX' },
+            'en-US': { name: 'English', flag: '🇺🇸', speechLang: 'en-US' },
+            'de-DE': { name: 'Deutsch', flag: '🇩🇪', speechLang: 'de-DE' },
+            'ko-KR': { name: '한국어', flag: '🇰🇷', speechLang: 'ko-KR' },
+            'zh-CN': { name: '中文', flag: '🇨🇳', speechLang: 'zh-CN' },
+            'ja-JP': { name: '日本語', flag: '🇯🇵', speechLang: 'ja-JP' },
+            'fr-FR': { name: 'Français', flag: '🇫🇷', speechLang: 'fr-FR' },
+            'it-IT': { name: 'Italiano', flag: '🇮🇹', speechLang: 'it-IT' },
+            'pt-BR': { name: 'Português', flag: '🇧🇷', speechLang: 'pt-BR' }
+        };
+
+        // Actualizar subtítulo
+        function updateSubtitle() {
+            const source = document.getElementById('sourceLang').value;
+            const target = document.getElementById('targetLang').value;
+            const sourceInfo = languages[source];
+            const targetInfo = languages[target];
+            document.getElementById('subtitle').textContent = 
+                `${sourceInfo.flag} ${sourceInfo.name} → ${targetInfo.flag} ${targetInfo.name}`;
+        }
+
+        // Intercambiar idiomas
+        function swapLanguages() {
+            const source = document.getElementById('sourceLang');
+            const target = document.getElementById('targetLang');
+            const temp = source.value;
+            source.value = target.value;
+            target.value = temp;
+            updateSubtitle();
+            updateStatus('🔄 Idiomas intercambiados');
+        }
+
+        // Actualizar estado
+        function updateStatus(message) {
+            document.getElementById('statusBar').textContent = message;
+        }
+
+        // Traducir texto
+        async function translateText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                updateStatus('⚠️ Escribe o dicta un texto primero');
+                return;
+            }
+
+            const source = document.getElementById('sourceLang').value;
+            const target = document.getElementById('targetLang').value;
+            const chatArea = document.getElementById('chatArea');
+
+            // Agregar mensaje del usuario
+            addMessage('user', text);
+            
+            // Limpiar input
+            document.getElementById('textInput').value = '';
+            
+            updateStatus('⏳ Traduciendo...');
+
+            try {
+                // Extraer código de idioma base para la API
+                const sourceCode = source.split('-')[0];
+                const targetCode = target.split('-')[0];
+                
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceCode}|${targetCode}`);
+                const data = await response.json();
+
+                if (data.responseData && data.responseData.translatedText) {
+                    const translation = data.responseData.translatedText;
+                    const targetInfo = languages[target];
+                    
+                    addMessage('bot', 'Traducción:', translation, target);
+                    updateStatus(`✅ Traducido a ${targetInfo.name}`);
+                } else {
+                    addMessage('bot', '❌ No se pudo traducir. Intenta de nuevo.');
+                    updateStatus('❌ Error en la traducción');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('bot', '⚠️ Error de conexión. Verifica tu internet.');
+                updateStatus('⚠️ Error de conexión');
+            }
+        }
+
+        // Agregar mensaje al chat
+        function addMessage(type, text, translation = null, targetLang = null) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let content = text;
+            if (translation) {
+                content += `<span class="translation-text">${translation}</span>`;
+                content += `<button class="speak-btn" onclick="speakTranslation('${translation.replace(/'/g, "\\'")}', '${targetLang}', this)">
+                    🔊 Escuchar
+                </button>`;
+            }
+            
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Reproducir traducción
+        function speakTranslation(text, lang, button) {
+            if ('speechSynthesis' in window) {
+                // Cancelar reproducción anterior
+                if (currentUtterance) {
+                    speechSynthesis.cancel();
+                    currentUtterance = null;
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                // Marcar botón como hablando
+                button.classList.add('speaking');
+                button.innerHTML = '🔊 Reproduciendo...';
+                
+                utterance.onend = () => {
+                    button.classList.remove('speaking');
+                    button.innerHTML = '🔊 Escuchar';
+                };
+                
+                utterance.onerror = () => {
+                    button.classList.remove('speaking');
+                    button.innerHTML = '🔊 Escuchar';
+                };
+                
+                currentUtterance = utterance;
+                speechSynthesis.speak(utterance);
+            } else {
+                updateStatus('⚠️ Tu navegador no soporta voz');
+            }
+        }
+
+        // Toggle micrófono
+        function toggleMicrophone() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                updateStatus('⚠️ Usa Chrome o Edge para el micrófono');
+                return;
+            }
+
+            const micBtn = document.getElementById('micBtn');
+            
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎤';
+                updateStatus('✅ Listo para traducir');
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            const sourceLang = document.getElementById('sourceLang').value;
+            
+            recognition.lang = sourceLang;
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = '🔴';
+                updateStatus('🎤 Escuchando... Habla ahora');
+            };
+
+            recognition.onresult = (event) => {
+                let finalText = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    finalText += event.results[i][0].transcript;
+                }
+                document.getElementById('textInput').value = finalText;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Error:', event.error);
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎤';
+                
+                switch(event.error) {
+                    case 'not-allowed':
+                        updateStatus('⚠️ Permiso de micrófono denegado');
+                        break;
+                    case 'no-speech':
+                        updateStatus('⚠️ No se detectó voz');
+                        break;
+                    case 'network':
+                        updateStatus('⚠️ Error de red');
+                        break;
+                    default:
+                        updateStatus('⚠️ Error: ' + event.error);
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '🎤';
+                updateStatus('✅ Texto capturado. Presiona Traducir');
+                
+                // Traducir automáticamente si hay texto
+                if (document.getElementById('textInput').value.trim()) {
+                    setTimeout(() => translateText(), 500);
+                }
+            };
+
+            recognition.start();
+        }
+
+        // Toggle QR
+        function toggleQR() {
+            const qrSection = document.getElementById('qrSection');
+            if (qrSection.style.display === 'none') {
+                generateQR();
+                qrSection.style.display = 'block';
+                updateStatus('📱 Escanea el código para compartir');
+            } else {
+                qrSection.style.display = 'none';
+                updateStatus('✅ Listo para traducir');
+            }
+        }
+
+        // Generar QR
+        function generateQR() {
+            const url = window.location.href;
+            document.getElementById('qrCode').src = 
+                `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+            document.getElementById('qrUrl').textContent = url;
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSubtitle();
+            generateQR();
+            
+            // Permitir Enter para traducir
+            document.getElementById('textInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    translateText();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

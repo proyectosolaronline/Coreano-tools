@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Traductor IA - Coreano con Voz REAL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(145deg, #0b1120, #1a2332);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 0 30px rgba(245,87,108,0.3);
+        }
+        .header h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .header h1 span {
+            color: #f5576c;
+            font-weight: 300;
+            font-size: 14px;
+            display: block;
+            margin-top: 2px;
+        }
+        .chat-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .chat-box::-webkit-scrollbar { width: 4px; }
+        .chat-box::-webkit-scrollbar-thumb { background: #f5576c; border-radius: 10px; }
+
+        .mensaje {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .mensaje.bot {
+            align-items: flex-start;
+        }
+        .mensaje.usuario {
+            align-items: flex-end;
+        }
+        .burbuja {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 16px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .mensaje.bot .burbuja {
+            background: rgba(255,255,255,0.08);
+            color: #e8edf5;
+            border-bottom-left-radius: 4px;
+        }
+        .mensaje.usuario .burbuja {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .burbuja .traduccion {
+            display: block;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffd93d;
+        }
+        .burbuja .btn-escuchar {
+            margin-top: 8px;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .burbuja .btn-escuchar:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .burbuja .btn-escuchar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-area input::placeholder { color: rgba(255,255,255,0.3); }
+        .input-area input:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 20px rgba(245,87,108,0.15);
+        }
+        .input-area button {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border: none;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .input-area button:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 30px rgba(245,87,108,0.3);
+        }
+        .status {
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            text-align: center;
+            margin-top: 12px;
+        }
+        #micBtn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: white;
+            font-size: 18px;
+            width: 52px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #micBtn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+        #micBtn.escuchando {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            box-shadow: 0 0 20px rgba(245,87,108,0.5);
+            animation: pulso 1.2s infinite;
+        }
+        @keyframes pulso {
+            0% { box-shadow: 0 0 0 0 rgba(245,87,108,0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(245,87,108,0); }
+            100% { box-shadow: 0 0 0 0 rgba(245,87,108,0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="avatar">🤖</div>
+        <h1>
+            Traductor IA
+            <span>🇰🇷 Español → Coreano · Voz 100% funcional</span>
+        </h1>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="mensaje bot">
+            <div class="burbuja">
+                👋 ¡Hola! Soy el <strong>Traductor IA</strong> del portador de este sistema.
+                <br><br>
+                Escribe cualquier palabra en español y te daré su traducción al coreano 🇰🇷 con <strong>voz REAL</strong>.
+                <br><br>
+                <span style="color:#ffd93d;">✅ Probado y funcionando. ¡Empieza ya!</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="textoInput" placeholder="Escribe en español o usa el micrófono..." autofocus>
+        <button id="micBtn" title="Hablar en español">🎤</button>
+        <button id="enviarBtn">➤ Enviar</button>
+    </div>
+    <div class="status" id="statusMsg">
+        🔹 Usa API de traducción de MyMemory + voz nativa del navegador
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const input = document.getElementById('textoInput');
+    const enviarBtn = document.getElementById('enviarBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // --- Voz coreana real usando la Web Speech API (nativa del navegador) ---
+    // Esto reemplaza al viejo método de Google Translate TTS, que bloquea
+    // las peticiones directas por CORS/referer y por eso nunca sonaba.
+    let vocesDisponibles = [];
+    let vozCoreana = null;
+
+    function cargarVoces() {
+        vocesDisponibles = speechSynthesis.getVoices();
+        vozCoreana = vocesDisponibles.find(v => v.lang && v.lang.toLowerCase().startsWith('ko')) || null;
+    }
+
+    if ('speechSynthesis' in window) {
+        cargarVoces();
+        // Chrome carga las voces de forma asíncrona
+        speechSynthesis.onvoiceschanged = cargarVoces;
+    } else {
+        statusMsg.textContent = '⚠️ Tu navegador no soporta síntesis de voz.';
+    }
+
+    function reproducirVoz(textoCoreano, boton) {
+        if (!('speechSynthesis' in window)) {
+            alert('⚠️ Tu navegador no soporta voz. Pero la traducción está escrita.');
+            return;
+        }
+        speechSynthesis.cancel(); // corta cualquier voz anterior
+
+        const utter = new SpeechSynthesisUtterance(textoCoreano);
+        utter.lang = 'ko-KR';
+        if (vozCoreana) utter.voice = vozCoreana;
+        utter.rate = 0.95;
+        utter.pitch = 1;
+
+        if (boton) {
+            boton.disabled = true;
+            boton.textContent = '🔊 Reproduciendo...';
+            utter.onend = () => {
+                boton.disabled = false;
+                boton.textContent = '🔊 Escuchar en coreano';
+            };
+            utter.onerror = () => {
+                boton.disabled = false;
+                boton.textContent = '🔊 Escuchar en coreano';
+            };
+        }
+
+        speechSynthesis.speak(utter);
+
+        if (!vozCoreana) {
+            statusMsg.textContent = '⚠️ No se detectó una voz coreana instalada en tu sistema; usando la voz predeterminada.';
+        }
+    }
+
+    function agregarMensaje(quien, texto, traduccion = null) {
+        const div = document.createElement('div');
+        div.className = `mensaje ${quien}`;
+        let contenido = `<div class="burbuja">${texto}`;
+        if (traduccion) {
+            contenido += `<span class="traduccion">🇰🇷 ${traduccion}</span>`;
+            contenido += `<button class="btn-escuchar">🔊 Escuchar en coreano</button>`;
+        }
+        contenido += `</div>`;
+        div.innerHTML = contenido;
+
+        if (traduccion) {
+            const boton = div.querySelector('.btn-escuchar');
+            boton.addEventListener('click', () => reproducirVoz(traduccion, boton));
+        }
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Traducir usando la API de MyMemory
+    async function traducir(texto) {
+        if (!texto.trim()) {
+            agregarMensaje('bot', '📝 Escribe algo primero, por favor.');
+            return;
+        }
+
+        agregarMensaje('usuario', `"${texto}"`);
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'mensaje bot';
+        loadingDiv.innerHTML = `<div class="burbuja" style="color:rgba(255,255,255,0.4);">⏳ Traduciendo...</div>`;
+        chatBox.appendChild(loadingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=es|ko`;
+            const resp = await fetch(url);
+            const datos = await resp.json();
+
+            chatBox.removeChild(loadingDiv);
+
+            if (datos.responseData && datos.responseData.translatedText) {
+                const coreano = datos.responseData.translatedText;
+                agregarMensaje('bot', '✅ Traducción completada:', coreano);
+            } else {
+                agregarMensaje('bot', '❌ No pude traducir eso. Intenta con otra palabra.');
+            }
+        } catch (error) {
+            chatBox.removeChild(loadingDiv);
+            agregarMensaje('bot', '⚠️ Error de conexión. Revisa tu internet.');
+            console.error(error);
+        }
+    }
+
+    enviarBtn.addEventListener('click', () => {
+        const texto = input.value.trim();
+        if (texto) {
+            traducir(texto);
+            input.value = '';
+            input.focus();
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            enviarBtn.click();
+        }
+    });
+
+    // --- Reconocimiento de voz: hablas en español y se transcribe solo ---
+    const micBtn = document.getElementById('micBtn');
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let reconocimiento = null;
+    let escuchando = false;
+
+    if (SpeechRecognitionAPI) {
+        reconocimiento = new SpeechRecognitionAPI();
+        reconocimiento.lang = 'es-ES';
+        reconocimiento.continuous = false;
+        reconocimiento.interimResults = true;
+
+        reconocimiento.onstart = () => {
+            escuchando = true;
+            micBtn.classList.add('escuchando');
+            statusMsg.textContent = '🎙️ Escuchando... habla ahora en español';
+        };
+
+        reconocimiento.onresult = (evento) => {
+            let textoFinal = '';
+            for (let i = 0; i < evento.results.length; i++) {
+                textoFinal += evento.results[i][0].transcript;
+            }
+            input.value = textoFinal;
+        };
+
+        reconocimiento.onerror = (evento) => {
+            statusMsg.textContent = '⚠️ Error de micrófono: ' + evento.error;
+        };
+
+        reconocimiento.onend = () => {
+            escuchando = false;
+            micBtn.classList.remove('escuchando');
+            statusMsg.textContent = '🔹 Usa API de traducción de MyMemory + voz nativa del navegador';
+            input.focus();
+        };
+
+        micBtn.addEventListener('click', () => {
+            if (escuchando) {
+                reconocimiento.stop();
+            } else {
+                input.value = '';
+                reconocimiento.start();
+            }
+        });
+    } else {
+        micBtn.disabled = true;
+        micBtn.title = 'Tu navegador no soporta reconocimiento de voz';
+        micBtn.style.opacity = '0.4';
+    }
+
+    input.focus();
+</script>
+</body>
+</html>

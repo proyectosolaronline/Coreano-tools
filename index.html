@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Traductor IA Profesional</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(145deg, #0b1120, #1a2332);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+        }
+        .header-texto h1 {
+            color: white;
+            font-size: 20px;
+        }
+        .header-texto p {
+            color: #f5576c;
+            font-size: 12px;
+        }
+        .chat-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .mensaje {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .mensaje.bot {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .mensaje.usuario {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            text-align: right;
+        }
+        .traduccion {
+            display: block;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd93d;
+        }
+        .btn-escuchar {
+            margin-top: 10px;
+            background: #f5576c;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-escuchar:hover {
+            background: #e0445a;
+        }
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fila-idiomas {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        select {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        select option {
+            background: #1a2332;
+            color: white;
+        }
+        .fila-texto {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+        }
+        input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        button {
+            padding: 15px 25px;
+            border-radius: 25px;
+            border: none;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(245,87,108,0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #micBtn {
+            background: #f5576c;
+            padding: 15px;
+            font-size: 20px;
+        }
+        .status {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .qr-section {
+            margin-top: 20px;
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .qr-section img {
+            width: 120px;
+            height: 120px;
+            background: white;
+            padding: 5px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .qr-section p {
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="avatar">🤖</div>
+        <div class="header-texto">
+            <h1>Traductor IA</h1>
+            <p id="subtitulo">🇲🇽 Español (México) → 🇰🇷 Coreano</p>
+        </div>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="mensaje bot">
+            👋 ¡Hola! Soy tu Traductor IA.<br>
+            Elige idiomas, escribe texto y obtén traducción con voz.
+        </div>
+    </div>
+
+    <div class="controles">
+        <div class="fila-idiomas">
+            <select id="idiomaOrigen">
+                <option value="es">🇲🇽 Español (México)</option>
+                <option value="en">🇺🇸 Inglés</option>
+                <option value="de">🇩🇪 Alemán</option>
+                <option value="ko">🇰🇷 Coreano</option>
+                <option value="zh-CN">🇨🇳 Chino</option>
+            </select>
+            <span style="color: #f5576c; font-size: 20px;">➜</span>
+            <select id="idiomaDestino">
+                <option value="ko">🇰🇷 Coreano</option>
+                <option value="es">🇲🇽 Español (México)</option>
+                <option value="en">🇺🇸 Inglés</option>
+                <option value="de">🇩🇪 Alemán</option>
+                <option value="zh-CN">🇨🇳 Chino</option>
+            </select>
+        </div>
+        <div class="fila-texto">
+            <input type="text" id="textoInput" placeholder="Escribe texto aquí..." />
+            <button id="micBtn" onclick="usarMicrofono()">🎤</button>
+        </div>
+        <button onclick="traducir()">➤ Traducir</button>
+    </div>
+
+    <div class="status" id="statusMsg">
+        Listo para traducir
+    </div>
+
+    <div class="qr-section">
+        <p>📱 Comparte esta página:</p>
+        <img id="qrCode" src="" alt="Código QR">
+        <p style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 5px;" id="urlActual"></p>
+    </div>
+</div>
+
+<script>
+    // Función para traducir usando MyMemory API
+    async function traducir() {
+        const texto = document.getElementById('textoInput').value.trim();
+        const origen = document.getElementById('idiomaOrigen').value;
+        const destino = document.getElementById('idiomaDestino').value;
+        const chatBox = document.getElementById('chatBox');
+        const statusMsg = document.getElementById('statusMsg');
+        
+        if (!texto) {
+            statusMsg.textContent = '⚠️ Por favor escribe texto para traducir';
+            return;
+        }
+
+        // Mostrar mensaje del usuario
+        chatBox.innerHTML += `<div class="mensaje usuario">${texto}</div>`;
+        statusMsg.textContent = '⏳ Traduciendo...';
+        
+        try {
+            // Usar MyMemory API (gratuita)
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${origen}|${destino}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.responseData && data.responseData.translatedText) {
+                const traduccion = data.responseData.translatedText;
+                const nombreDestino = document.getElementById('idiomaDestino').selectedOptions[0].text;
+                
+                chatBox.innerHTML += `
+                    <div class="mensaje bot">
+                        Traducción:
+                        <span class="traduccion">${traduccion}</span>
+                        <button class="btn-escuchar" onclick="reproducirVoz('${traduccion.replace(/'/g, "\\'")}', '${destino}')">
+                            🔊 Escuchar
+                        </button>
+                    </div>
+                `;
+                statusMsg.textContent = '✅ Traducción completada';
+            } else {
+                chatBox.innerHTML += `<div class="mensaje bot">❌ No se pudo traducir. Intenta de nuevo.</div>`;
+                statusMsg.textContent = '❌ Error en la traducción';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            chatBox.innerHTML += `<div class="mensaje bot">⚠️ Error de conexión. Verifica tu internet.</div>`;
+            statusMsg.textContent = '⚠️ Error de conexión';
+        }
+        
+        // Limpiar input y hacer scroll
+        document.getElementById('textoInput').value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Función para reproducir voz
+    function reproducirVoz(texto, idioma) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = idioma;
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert('Tu navegador no soporta síntesis de voz');
+        }
+    }
+
+    // Función para usar micrófono
+    function usarMicrofono() {
+        const statusMsg = document.getElementById('statusMsg');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        const idiomaOrigen = document.getElementById('idiomaOrigen').value;
+        
+        recognition.lang = idiomaOrigen;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            statusMsg.textContent = '🎤 Escuchando... Habla ahora';
+            document.getElementById('micBtn').style.background = '#e0445a';
+        };
+
+        recognition.onresult = function(event) {
+            const texto = event.results[0][0].transcript;
+            document.getElementById('textoInput').value = texto;
+            statusMsg.textContent = '✅ Texto capturado: ' + texto;
+            document.getElementById('micBtn').style.background = '#f5576c';
+            
+            // Traducir automáticamente
+            setTimeout(() => traducir(), 500);
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Error de reconocimiento:', event.error);
+            statusMsg.textContent = '❌ Error: ' + event.error;
+            document.getElementById('micBtn').style.background = '#f5576c';
+        };
+
+        recognition.onend = function() {
+            document.getElementById('micBtn').style.background = '#f5576c';
+        };
+
+        recognition.start();
+    }
+
+    // Generar código QR al cargar la página
+    window.onload = function() {
+        const url = window.location.href;
+        document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        document.getElementById('urlActual').textContent = url;
+        
+        // Permitir traducción con Enter
+        document.getElementById('textoInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                traducir();
+            }
+        });
+    };
+</script>
+</body>
+</html>
